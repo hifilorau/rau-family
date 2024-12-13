@@ -14,10 +14,10 @@ const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(
 
 export const getMainPhoto = async () => {
   try {
-    const records = await base('Photos')
+    const records = await base('links')
       .select({
         maxRecords: 1,
-        filterByFormula: '{isMainPhoto} = 1',
+        // filterByFormula: '{isMainPhoto} = 1',
       })
       .firstPage();
 
@@ -38,16 +38,16 @@ export const getFamilyLinks = async () => {
   try {
     const records = await base('Links')
       .select({
-        sort: [{ field: 'Order', direction: 'asc' }],
+        // sort: [{ field: 'Order', direction: 'asc' }],
       })
       .firstPage();
 
     return records.map((record) => ({
       id: record.id,
-      title: record.get('Title'),
-      url: record.get('URL'),
-      description: record.get('Description'),
-      category: record.get('Category'),
+      name: record.get('Name'),
+      url: record.get('links'),
+      // description: record.get('Description'),
+      category: record.get('category'),
     }));
   } catch (error) {
     console.error('Error fetching family links:', error);

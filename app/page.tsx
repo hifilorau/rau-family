@@ -9,10 +9,10 @@ export const revalidate = 3600; // Revalidate every hour
 export default async function Home() {
   const mainPhoto = await getMainPhoto();
   const familyLinks = await getFamilyLinks();
-
-  const albumLinks = familyLinks.filter((link) => link.category === 'Album');
-  const otherLinks = familyLinks.filter((link) => link.category === 'Other');
-
+  console.log('familyLinks', familyLinks);
+  const albumLinks = familyLinks.filter((link) => link.category === 'album');
+  const otherLinks = familyLinks.filter((link) => link.category === 'link'); 
+console.log('albumLinks', albumLinks);
   return (
     <main className="min-h-screen bg-gradient-to-b from-background to-muted">
       <div className="container mx-auto px-4 py-8">
@@ -53,10 +53,10 @@ export default async function Home() {
                         rel="noopener noreferrer"
                         className="text-primary hover:underline"
                       >
-                        {link.title}
+                        {link.name as string}
                       </a>
                     </CardTitle>
-                    <CardDescription>{link.description}</CardDescription>
+                    {/* <CardDescription>{link.description}</CardDescription> */}
                   </CardHeader>
                 </Card>
               ))}
@@ -80,10 +80,10 @@ export default async function Home() {
                         rel="noopener noreferrer"
                         className="text-primary hover:underline"
                       >
-                        {link.title}
+                        {link.name as string}
                       </a>
                     </CardTitle>
-                    <CardDescription>{link.description}</CardDescription>
+                    {/* <CardDescription>{link.description}</CardDescription> */}
                   </CardHeader>
                 </Card>
               ))}
