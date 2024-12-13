@@ -14,83 +14,83 @@ export default async function Home() {
   const otherLinks = familyLinks.filter((link) => link.category === 'link'); 
 console.log('albumLinks', albumLinks);
   return (
-    <main className="min-h-screen bg-gradient-to-b from-background to-muted">
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold text-center mb-8 text-primary">
-          Welcome to the Raus Family Website
-        </h1>
+    <main className="min-h-screen relative">
+      {/* Background Image */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src={"/fam.jpg"}
+          alt="Family Background"
+          fill
+          className="object-cover opacity-20"
+          priority
+        />
+      </div>
+      
+      {/* Content Overlay */}
+        <div className="relative z-10 flex min-h-screen items-center">
+        <div className="container mx-auto px-4">
+          <h1 className="text-4xl font-serif text-center mb-8 text-primary font-bold tracking-tight">
+          Oliver Rau Owen Chida Family Tree
+          </h1>
 
-        {mainPhoto && (
-          <div className="mb-12 max-w-4xl mx-auto">
-            <AspectRatio ratio={16 / 9} className="bg-muted rounded-lg overflow-hidden">
-              <Image
-                src={mainPhoto.url}
-                alt={mainPhoto.caption}
-                fill
-                className="object-cover"
-                priority
-              />
-            </AspectRatio>
-            <p className="text-center text-muted-foreground mt-2">{mainPhoto.caption}</p>
-          </div>
-        )}
+          <div className="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto bg-background/80 backdrop-blur-sm rounded-lg p-8 shadow-lg">
 
-        <div className="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto">
           {/* Photo Albums Section */}
           <section>
-            <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-              <Album className="h-6 w-6" />
+            <h2 className="text-3xl font-serif mb-4 flex items-center gap-2 tracking-tight">
+              <Album className="h-7 w-7" />
               Photo Albums
             </h2>
             <div className="grid gap-4">
-              {albumLinks.map((link) => (
+            {albumLinks.filter(link => link.url && link.name).map((link) => (
                 <Card key={link.id} className="transition-transform hover:scale-102">
                   <CardHeader>
-                    <CardTitle>
-                      <a
-                        href={link.url as string}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        {link.name as string}
-                      </a>
-                    </CardTitle>
-                    {/* <CardDescription>{link.description}</CardDescription> */}
+                  <CardTitle>
+                    <a
+                    href={link.url as string}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline font-light"
+                    >
+                    {link.name as string}
+                    </a>
+                  </CardTitle>
+                  {/* <CardDescription>{link.description}</CardDescription> */}
                   </CardHeader>
                 </Card>
-              ))}
+                ))}
             </div>
           </section>
 
           {/* Other Links Section */}
           <section>
-            <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-              <LinkIcon className="h-6 w-6" />
+            <h2 className="text-3xl font-serif mb-4 flex items-center gap-2 tracking-tight">
+              <LinkIcon className="h-7 w-7" />
               Family Links
             </h2>
             <div className="grid gap-4">
-              {otherLinks.map((link) => (
+            {otherLinks.filter(link => link.url && link.name).map((link) => (
                 <Card key={link.id} className="transition-transform hover:scale-102">
                   <CardHeader>
-                    <CardTitle>
-                      <a
-                        href={link.url as string}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        {link.name as string}
-                      </a>
-                    </CardTitle>
-                    {/* <CardDescription>{link.description}</CardDescription> */}
+                  <CardTitle>
+                    <a
+                    href={link.url as string}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline font-light"
+                    >
+                    {link.name as string}
+                    </a>
+                  </CardTitle>
+                  {/* <CardDescription>{link.description}</CardDescription> */}
                   </CardHeader>
                 </Card>
-              ))}
+                ))}
             </div>
           </section>
+          </div>
         </div>
-      </div>
-    </main>
+        </div>
+      </main>
   );
 }
