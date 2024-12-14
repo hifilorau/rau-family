@@ -1,30 +1,16 @@
-import Airtable from 'airtable';
-
-if (!process.env.AIRTABLE_API_KEY) {
-  throw new Error('Missing AIRTABLE_API_KEY');
-}
-
-if (!process.env.AIRTABLE_BASE_ID) {
-  throw new Error('Missing AIRTABLE_BASE_ID');
-}
-
-const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(
-  process.env.AIRTABLE_BASE_ID
-);
-
 export const getMainPhoto = async () => {
   try {
-    const records = await base('links')
-      .select({
-        maxRecords: 1,
-        // filterByFormula: '{isMainPhoto} = 1',
-      })
-      .firstPage();
+    const res = await fetch(`https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/Links?maxRecords=1`, {
+      headers: {
+        Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`
+      }
+    });
+    const { records } = await res.json();
 
     if (records.length > 0) {
       return {
-        url: records[0].get('URL') as string,
-        caption: records[0].get('Caption') as string,
+        url: records[0].fields['URL'],
+        caption: records[0].fields['Caption']
       };
     }
     return null;
@@ -36,18 +22,18 @@ export const getMainPhoto = async () => {
 
 export const getFamilyLinks = async () => {
   try {
-    const records = await base('Links')
-      .select({
-        // sort: [{ field: 'Order', direction: 'asc' }],
-      })
-      .firstPage();
-    console.log('records', records)
-    return records.map((record) => ({
+    const res = await fetch(`https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/Links`, {
+      headers: {
+        Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`
+      }
+    });
+    const { records } = await res.json();
+
+    return records.map(record => ({
       id: record.id,
-      name: record.get('Name'),
-      url: record.get('links'),
-      // description: record.get('Description'),
-      category: record.get('category'),
+      name: record.fields['Name'],
+      url: record.fields['links'],
+      category: record.fields['category']
     }));
   } catch (error) {
     console.error('Error fetching family links:', error);
