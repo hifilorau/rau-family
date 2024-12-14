@@ -53,7 +53,7 @@ export default function MusicPlayer({ audioUrl, thumbnailUrl, title }: MusicPlay
 	}, []);
 
 	return (
-		<Card className="fixed bottom-4 right-4 p-4 w-64 bg-background/95 backdrop-blur-sm shadow-lg">
+		<Card className="fixed bottom-4 right-4 p-4 w-64 bg-background/95 backdrop-blur-sm shadow-lg z-20">
 			<div className="flex flex-col gap-4">
 				<div className="relative w-full aspect-square">
 					<Image

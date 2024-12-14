@@ -1,4 +1,4 @@
-import { getMainPhoto, getFamilyLinks } from '@/lib/airtable';
+import { getMainPhoto, getFamilyLinks, getMusicTracks } from '@/lib/airtable';
 import MusicPlayer from '@/app/components/MusicPlayer';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -18,6 +18,7 @@ export default async function Home() {
   
   const familyLinks: Link[] = await getFamilyLinks();
   const mainPhoto = await getMainPhoto();
+  const musicTracks = await getMusicTracks();
 
   const albumLinks = familyLinks.filter((link) => link.category === 'album');
   const otherLinks = familyLinks.filter((link) => link.category === 'link');
@@ -105,11 +106,13 @@ export default async function Home() {
           </div>
         </div>
         </div>
-        <MusicPlayer 
-          audioUrl="/path-to-your-audio.mp3"
-          thumbnailUrl="/path-to-your-thumbnail.jpg"
-          title="Song Title"
-        />
+        {musicTracks.length > 0 && (
+          <MusicPlayer 
+          audioUrl={musicTracks[0].songUrl}
+          thumbnailUrl={musicTracks[0].imageUrl}
+          title={musicTracks[0].name}
+          />
+        )}
         </main>
   );
 }

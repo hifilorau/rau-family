@@ -1,3 +1,9 @@
+interface MusicFields {
+  Name: string;
+  'link-song': string;
+  'link-image': string;
+}
+
 interface LinkFields {
   Name: string;
   URL: string;
@@ -35,6 +41,28 @@ export const getMainPhoto = async (): Promise<{ url: string; caption: string } |
   } catch (error) {
     console.error('Error fetching main photo:', error);
     return null;
+  }
+};
+
+export const getMusicTracks = async (): Promise<Array<{ id: string; name: string; songUrl: string; imageUrl: string }>> => {
+  try {
+    const res = await fetch(`https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/music`, {
+      headers: {
+        Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`
+      }
+    });
+
+    const { records }: AirtableResponse<MusicFields> = await res.json();
+
+    return records.map(record => ({
+      id: record.id,
+      name: record.fields.Name,
+      songUrl: record.fields['link-song'],
+      imageUrl: record.fields['link-image']
+    }));
+  } catch (error) {
+    console.error('Error fetching music tracks:', error);
+    return [];
   }
 };
 
