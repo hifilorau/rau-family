@@ -41,7 +41,7 @@ export const getFamilyLinks = async () => {
         // sort: [{ field: 'Order', direction: 'asc' }],
       })
       .firstPage();
-
+    console.log('records', records)
     return records.map((record) => ({
       id: record.id,
       name: record.get('Name'),
