@@ -8,8 +8,16 @@ import SnowEffect from '@/app/components/SnowEffects';
 export const revalidate = 3600; // Revalidate every hour
 
 export default async function Home() {
+  interface Link {
+    id: string;
+    name: string;
+    url: string;
+    category: 'album' | 'link'; // If you know the possible categories, use a union type
+  }
+  
+  const familyLinks: Link[] = await getFamilyLinks();
   const mainPhoto = await getMainPhoto();
-  const familyLinks = await getFamilyLinks();
+
   const albumLinks = familyLinks.filter((link) => link.category === 'album');
   const otherLinks = familyLinks.filter((link) => link.category === 'link');
 
