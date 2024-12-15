@@ -1,41 +1,34 @@
-interface MusicFields {
-  Name: string;
-  'link-song': string;
-  'link-image': string;
+import Airtable from 'airtable';
+
+if (!process.env.AIRTABLE_API_KEY) {
+  throw new Error('Missing AIRTABLE_API_KEY');
 }
 
-interface LinkFields {
-  Name: string;
-  URL: string;
-  Caption: string;
-  links: string;
-  category: 'album' | 'link'; // Use a union type if you know possible values
+if (!process.env.AIRTABLE_BASE_ID) {
+  throw new Error('Missing AIRTABLE_BASE_ID');
 }
 
-interface AirtableRecord<T> {
-  id: string;
-  fields: T;
-}
-
-interface AirtableResponse<T> {
-  records: AirtableRecord<T>[];
-}
+const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(
+  process.env.AIRTABLE_BASE_ID
+);
 
 export const getMainPhoto = async (): Promise<{ url: string; caption: string } | null> => {
   try {
-    const res = await fetch(`https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/Links?maxRecords=1`, {
-      headers: {
-        Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`
-      }
-    });
-
-    const { records }: AirtableResponse<LinkFields> = await res.json();
+    const records = await base('Links')
+      .select({
+        maxRecords: 1,
+      })
+      .all();
 
     if (records.length > 0) {
-      return {
-        url: records[0].fields.URL,
-        caption: records[0].fields.Caption
-      };
+      const url = records[0].get('URL') as string;
+      // Only return if URL is valid
+      if (url && url.trim() !== '') {
+        return {
+          url,
+          caption: records[0].get('Caption') as string || 'Family Photo',
+        };
+      }
     }
     return null;
   } catch (error) {
@@ -44,22 +37,27 @@ export const getMainPhoto = async (): Promise<{ url: string; caption: string } |
   }
 };
 
-export const getMusicTracks = async (): Promise<Array<{ id: string; name: string; songUrl: string; imageUrl: string }>> => {
+export const getMusicTracks = async (): Promise<Array<{ id: string; name: string; songUrl: string; imageUrl: string; artist: string }>> => {
   try {
-    const res = await fetch(`https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/music`, {
-      headers: {
-        Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`
-      }
-    });
+    const records = await base('music')
+      .select()
+      .all();
 
-    const { records }: AirtableResponse<MusicFields> = await res.json();
-
-    return records.map(record => ({
-      id: record.id,
-      name: record.fields.Name,
-      songUrl: record.fields['link-song'],
-      imageUrl: record.fields['link-image']
-    }));
+    return records
+      .map(record => ({
+        id: record.id,
+        name: record.get('Name') as string,
+        songUrl: record.get('link-song') as string,
+        imageUrl: record.get('link-image') as string,
+        artist: record.get('Artist') as string || 'Unknown Artist' // Add artist field with fallback
+      }))
+      .filter(track => 
+        track.name && 
+        track.songUrl && 
+        track.songUrl.trim() !== '' && 
+        track.imageUrl && 
+        track.imageUrl.trim() !== ''
+      );
   } catch (error) {
     console.error('Error fetching music tracks:', error);
     return [];
@@ -68,22 +66,21 @@ export const getMusicTracks = async (): Promise<Array<{ id: string; name: string
 
 export const getFamilyLinks = async (): Promise<Array<{ id: string; name: string; url: string; category: 'album' | 'link' }>> => {
   try {
-    const res = await fetch(`https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/Links`, {
-      headers: {
-        Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`
-      }
-    });
+    const records = await base('Links')
+      .select()
+      .all();
 
-    const { records }: AirtableResponse<LinkFields> = await res.json();
-
-    return records.map(record => ({
-      id: record.id,
-      name: record.fields.Name,
-      url: record.fields.links,
-      category: record.fields.category
-    }));
+    return records
+      .map(record => ({
+        id: record.id,
+        name: record.get('Name') as string,
+        url: record.get('links') as string,
+        category: record.get('category') as 'album' | 'link'
+      }))
+      .filter(link => link.url && link.url.trim() !== '' && link.name); // Filter out invalid links
   } catch (error) {
     console.error('Error fetching family links:', error);
     return [];
   }
 };
+

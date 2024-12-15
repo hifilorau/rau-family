@@ -19,13 +19,18 @@ export default async function Home() {
   const familyLinks: Link[] = await getFamilyLinks();
   const mainPhoto = await getMainPhoto();
   const musicTracks = await getMusicTracks();
-
-  const albumLinks = familyLinks.filter((link) => link.category === 'album');
-  const otherLinks = familyLinks.filter((link) => link.category === 'link');
+  console.log('music tracks', musicTracks)
+  // Filter out any links with empty URLs
+  const albumLinks = familyLinks
+    .filter((link) => link.category === 'album' && link.url && link.url.trim() !== '');
+  const otherLinks = familyLinks
+    .filter((link) => link.category === 'link' && link.url && link.url.trim() !== '');
 
   // Ensure we have a valid URL for the image
-  const imageUrl = mainPhoto?.url || '/fam.jpg'; // Fallback to local image if no URL
-  const imageCaption = mainPhoto?.caption || 'Family Background';
+  const imageUrl = mainPhoto?.url && mainPhoto.url.trim() !== '' 
+    ? mainPhoto.url 
+    : '/fam.jpg'; // Fallback to local image
+  const imageCaption = mainPhoto?.caption || 'Family Photo';
 
   return (
     <main className="min-h-screen relative bg-black">
@@ -44,28 +49,28 @@ export default async function Home() {
       {/* Content Overlay */}
         <div className="relative z-10 flex min-h-screen items-center">
         <div className="container mx-auto px-4">
-          <h1 className="text-4xl font-serif text-center mb-8 text-primary font-bold tracking-tight">
+            <h1 className="text-4xl font-serif text-center mb-8 text-white font-bold tracking-tight">
             Oliver Rau Owen Chida Family Tree
-          </h1>
+            </h1>
 
-          <div className="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto bg-background/80 backdrop-blur-sm rounded-lg p-8 shadow-lg">
+            <div className="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto bg-black/40 backdrop-blur-sm rounded-lg p-8 shadow-lg border border-white/10">
 
-          {/* Photo Albums Section */}
-          <section>
-            <h2 className="text-3xl font-serif mb-4 flex items-center gap-2 tracking-tight">
+            {/* Photo Albums Section */}
+            <section>
+            <h2 className="text-3xl font-serif mb-4 flex items-center gap-2 tracking-tight text-white">
               <Album className="h-7 w-7" />
               Photo Albums
             </h2>
             <div className="grid gap-4">
             {albumLinks.filter(link => link.url && link.name).map((link) => (
-                <Card key={link.id} className="transition-transform hover:scale-102">
+                <Card key={link.id} className="transition-transform hover:scale-102 bg-white/10 backdrop-blur-sm border-white/5">
                   <CardHeader>
                   <CardTitle>
-                    <a
-                    href={link.url as string}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline font-light"
+                  <a
+                  href={link.url as string}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white hover:text-white/80 hover:underline font-light"
                     >
                     {link.name as string}
                     </a>
@@ -79,20 +84,20 @@ export default async function Home() {
 
           {/* Other Links Section */}
           <section>
-            <h2 className="text-3xl font-serif mb-4 flex items-center gap-2 tracking-tight">
+            <h2 className="text-3xl font-serif mb-4 flex items-center gap-2 tracking-tight text-white">
               <LinkIcon className="h-7 w-7" />
               Family Links
             </h2>
             <div className="grid gap-4">
             {otherLinks.filter(link => link.url && link.name).map((link) => (
-                <Card key={link.id} className="transition-transform hover:scale-102">
+                <Card key={link.id} className="transition-transform hover:scale-102 bg-white/10 backdrop-blur-sm border-white/5">
                   <CardHeader>
                   <CardTitle>
-                    <a
-                    href={link.url as string}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline font-light"
+                  <a
+                  href={link.url as string}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white hover:text-white/80 hover:underline font-light"
                     >
                     {link.name as string}
                     </a>
@@ -107,12 +112,9 @@ export default async function Home() {
         </div>
         </div>
         {musicTracks.length > 0 && (
-          <MusicPlayer 
-          audioUrl={musicTracks[0].songUrl}
-          thumbnailUrl={musicTracks[0].imageUrl}
-          title={musicTracks[0].name}
-          />
+          <MusicPlayer tracks={musicTracks} />
         )}
+
         </main>
   );
 }
