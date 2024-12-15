@@ -5,6 +5,7 @@ import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Loader2 } from 'l
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import Image from 'next/image';
+import AudioVisualizer from './AudioVisualizer';
 
 interface Track {
 	id: string;
@@ -17,32 +18,49 @@ interface Track {
 export default function MusicPlayer() {
 	const [tracks, setTracks] = useState<Track[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
-	const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
+	const [currentTrackIndex, setCurrentTrackIndex] = useState<number | null>(null);
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [isMuted, setIsMuted] = useState(false);
 	const audioRef = useRef<HTMLAudioElement | null>(null);
+    const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
+console.log('is playing', isPlaying)
+    // Helper function to get a random track index
+    const getRandomTrackIndex = (excludeIndex?: number | null) => {
+        if (tracks.length === 0) return 0;
+        if (tracks.length === 1) return 0;
+        
+        let newIndex;
+        do {
+            newIndex = Math.floor(Math.random() * tracks.length);
+        } while (newIndex === excludeIndex);
+        
+        return newIndex;
+    };
 
-	const currentTrack = tracks[currentTrackIndex];
-	const togglePlay = () => {
-
-		if (audioRef.current) {
-			if (isPlaying) {
-				audioRef.current.pause();
-			} else {
-				audioRef.current.play();
-			}
-			setIsPlaying(!isPlaying);
-		}
-	};
+	const currentTrack = currentTrackIndex !== null ? tracks[currentTrackIndex] : null;
+    const togglePlay = async () => {
+        if (audioRef.current) {
+          if (isPlaying) {
+            audioRef.current.pause();
+          } else {
+            if (audioContext?.state === 'suspended') {
+              await audioContext.resume();
+            }
+            await audioRef.current.play();
+          }
+          setIsPlaying(!isPlaying);
+        }
+      };
+      
 
 	const playNextTrack = () => {
-		const nextIndex = (currentTrackIndex + 1) % tracks.length;
+		const nextIndex = getRandomTrackIndex(currentTrackIndex);
 		setCurrentTrackIndex(nextIndex);
 		setIsPlaying(true);
 	};
 
 	const playPreviousTrack = () => {
-		const previousIndex = currentTrackIndex === 0 ? tracks.length - 1 : currentTrackIndex - 1;
+		const previousIndex = getRandomTrackIndex(currentTrackIndex);
 		setCurrentTrackIndex(previousIndex);
 		setIsPlaying(true);
 	};
@@ -63,6 +81,8 @@ export default function MusicPlayer() {
 				if (!response.ok) throw new Error('Failed to fetch tracks');
 				const fetchedTracks = await response.json();
 				setTracks(fetchedTracks);
+				// Set a random track index after fetching tracks
+				setCurrentTrackIndex(Math.floor(Math.random() * fetchedTracks.length));
 			} catch (error) {
 				console.error('Error fetching tracks:', error);
 			} finally {
@@ -89,6 +109,12 @@ export default function MusicPlayer() {
 			}
 		};
 	}, [currentTrackIndex]);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined' && !audioContext) {
+          setAudioContext(new (window.AudioContext || (window as any).webkitAudioContext)());
+        }
+      }, [audioContext]);
 
 	// Render loading state
 	if (isLoading) {
@@ -173,6 +199,7 @@ export default function MusicPlayer() {
 							)}
 						</Button>
 					</div>
+                    {/* {audioContext && <AudioVisualizer audioRef={audioRef} audioContext={audioContext} isPlaying={isPlaying}/>} */}
 				</div>
 			</div>
 			
@@ -180,6 +207,7 @@ export default function MusicPlayer() {
 				ref={audioRef}
 				src={currentTrack.songUrl}
 				preload="metadata"
+                crossOrigin="anonymous"
 			/>
 		</Card>
 	);
