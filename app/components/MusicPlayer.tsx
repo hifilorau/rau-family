@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import Image from 'next/image';
@@ -14,19 +14,17 @@ interface Track {
 	artist: string;
 }
 
-interface MusicPlayerProps {
-	tracks: Track[];
-}
-
-export default function MusicPlayer({ tracks }: MusicPlayerProps) {
+export default function MusicPlayer() {
+	const [tracks, setTracks] = useState<Track[]>([]);
+	const [isLoading, setIsLoading] = useState(true);
 	const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [isMuted, setIsMuted] = useState(false);
 	const audioRef = useRef<HTMLAudioElement | null>(null);
 
 	const currentTrack = tracks[currentTrackIndex];
-
 	const togglePlay = () => {
+
 		if (audioRef.current) {
 			if (isPlaying) {
 				audioRef.current.pause();
@@ -56,26 +54,58 @@ export default function MusicPlayer({ tracks }: MusicPlayerProps) {
 		}
 	};
 
+	
+
 	useEffect(() => {
-		if (audioRef.current) {
-			if (isPlaying) {
-				audioRef.current.play();
+		const fetchTracks = async () => {
+			try {
+				const response = await fetch('/api/tracks');
+				if (!response.ok) throw new Error('Failed to fetch tracks');
+				const fetchedTracks = await response.json();
+				setTracks(fetchedTracks);
+			} catch (error) {
+				console.error('Error fetching tracks:', error);
+			} finally {
+				setIsLoading(false);
 			}
-		}
-	}, [currentTrackIndex]);
+		};
+
+		fetchTracks();
+	}, []);
 
 	useEffect(() => {
-		if (audioRef.current) {
-			audioRef.current.addEventListener('ended', playNextTrack);
-			return () => {
-				if (audioRef.current) {
-					audioRef.current.removeEventListener('ended', playNextTrack);
-				}
-			};
+		if (audioRef.current && isPlaying) {
+			audioRef.current.play();
 		}
+	}, [currentTrackIndex, isPlaying]);
+
+	useEffect(() => {
+		if (!audioRef.current) return;
+		
+		audioRef.current.addEventListener('ended', playNextTrack);
+		return () => {
+			if (audioRef.current) {
+				audioRef.current.removeEventListener('ended', playNextTrack);
+			}
+		};
 	}, [currentTrackIndex]);
 
-	if (!tracks.length) return null;
+	// Render loading state
+	if (isLoading) {
+		return (
+			<Card className="fixed bottom-4 right-4 p-4 w-[480px] bg-black/80 backdrop-blur-sm border border-white/10 shadow-[0_0_15px_rgba(255,255,255,0.1)] z-20">
+				<div className="flex items-center justify-center p-4">
+					<Loader2 className="h-6 w-6 animate-spin text-white" />
+					<span className="ml-2 text-white">Loading tracks...</span>
+				</div>
+			</Card>
+		);
+	}
+
+	// Return null if no tracks
+	if (!tracks.length || !currentTrack) {
+		return null;
+	}
 
 	return (
 		<Card className="fixed bottom-4 right-4 p-4 w-[480px] bg-black/80 backdrop-blur-sm border border-white/10 shadow-[0_0_15px_rgba(255,255,255,0.1)] z-20">

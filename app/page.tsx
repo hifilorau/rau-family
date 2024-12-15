@@ -1,4 +1,4 @@
-import { getMainPhoto, getFamilyLinks, getMusicTracks } from '@/lib/airtable';
+import { getMainPhoto, getFamilyLinks } from '@/lib/airtable';
 import MusicPlayer from '@/app/components/MusicPlayer';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -13,14 +13,13 @@ export default async function Home() {
     id: string;
     name: string;
     url: string;
-    category: 'album' | 'link'; // If you know the possible categories, use a union type
+    category: 'album' | 'link';
   }
   
   const familyLinks: Link[] = await getFamilyLinks();
   const mainPhoto = await getMainPhoto();
-  const musicTracks = await getMusicTracks();
-  console.log('music tracks', musicTracks)
-  // Filter out any links with empty URLs
+
+
   const albumLinks = familyLinks
     .filter((link) => link.category === 'album' && link.url && link.url.trim() !== '');
   const otherLinks = familyLinks
@@ -111,9 +110,8 @@ export default async function Home() {
           </div>
         </div>
         </div>
-        {musicTracks.length > 0 && (
-          <MusicPlayer tracks={musicTracks} />
-        )}
+        <MusicPlayer />
+
 
         </main>
   );

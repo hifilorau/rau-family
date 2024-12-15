@@ -1,6 +1,5 @@
 import Airtable from 'airtable';
-
-if (!process.env.AIRTABLE_API_KEY) {
+if (!process.env.NEXT_AIRTABLE_API_KEY) {
   throw new Error('Missing AIRTABLE_API_KEY');
 }
 
