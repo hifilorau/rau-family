@@ -1,5 +1,6 @@
 import { getMainPhoto, getFamilyLinks } from '@/lib/airtable';
 import MusicPlayer from '@/app/components/MusicPlayer';
+import AudioPlayer from './components/AudioPlayer';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Album, Link as LinkIcon } from 'lucide-react';
@@ -110,8 +111,8 @@ export default async function Home() {
           </div>
         </div>
         </div>
-        <MusicPlayer />
-
+        {/* <MusicPlayer />  */}
+        <AudioPlayer />
 
         </main>
   );

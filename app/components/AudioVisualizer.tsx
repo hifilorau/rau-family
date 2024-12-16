@@ -7,30 +7,37 @@ interface AudioVisualizerProps {
 
 const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ audioRef, audioContext }) => {
   useEffect(() => {
-    if (!audioRef.current) return;
-
+    if (!audioRef.current || !audioContext) return;
+  
+    // Check if already connected to avoid re-triggering unnecessarily
+    if (audioRef.current.dataset.connected === 'true') {
+      console.log('Audio source already connected, skipping.');
+      return;
+    }
+  
     let source: MediaElementAudioSourceNode | null = null;
-
+  
     try {
-      if (!audioRef.current.dataset.connected) {
-        source = audioContext.createMediaElementSource(audioRef.current);
-        audioRef.current.dataset.connected = 'true';
-
-        // Connect the source directly to the destination to ensure playback
-        source.connect(audioContext.destination);
-      }
+      // Create the MediaElementAudioSourceNode and connect it
+      source = audioContext.createMediaElementSource(audioRef.current);
+      audioRef.current.dataset.connected = 'true';
+      source.connect(audioContext.destination);
+  
+      console.log('Audio source connected to destination');
     } catch (error) {
       console.error('Error setting up audio source:', error);
     }
-
+  
     return () => {
+      // Only disconnect if source exists and cleanup is necessary
       if (source) {
         source.disconnect();
+        console.log('Audio source disconnected');
       }
     };
-  }, [audioRef, audioContext]);
+  }, [audioRef.current, audioContext]);
 
-  return null; // No visualization logic yet
+  return <canvas id="audio-visualizer" width="600" height="200" />;
 };
 
 export default AudioVisualizer;

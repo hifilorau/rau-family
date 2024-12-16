@@ -22,7 +22,8 @@ export default function MusicPlayer() {
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [isMuted, setIsMuted] = useState(false);
 	const audioRef = useRef<HTMLAudioElement | null>(null);
-    const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
+    const [audioContext] = useState(() => new (window.AudioContext || (window as any).webkitAudioContext)());
+
 console.log('is playing', isPlaying)
     // Helper function to get a random track index
     const getRandomTrackIndex = (excludeIndex?: number | null) => {
@@ -39,18 +40,26 @@ console.log('is playing', isPlaying)
 
 	const currentTrack = currentTrackIndex !== null ? tracks[currentTrackIndex] : null;
     const togglePlay = async () => {
+        if (!audioContext) {
+        //   setAudioContext(new (window.AudioContext || (window as any).webkitAudioContext)());
+        //   console.log('AudioContext initialized');
+        }
+      
+        if (audioContext?.state === 'suspended') {
+          await audioContext.resume();
+          console.log('AudioContext resumed');
+        }
+      
         if (audioRef.current) {
           if (isPlaying) {
             audioRef.current.pause();
           } else {
-            if (audioContext?.state === 'suspended') {
-              await audioContext.resume();
-            }
             await audioRef.current.play();
           }
           setIsPlaying(!isPlaying);
         }
       };
+      
       
 
 	const playNextTrack = () => {
@@ -110,11 +119,11 @@ console.log('is playing', isPlaying)
 		};
 	}, [currentTrackIndex]);
 
-    useEffect(() => {
-        if (typeof window !== 'undefined' && !audioContext) {
-          setAudioContext(new (window.AudioContext || (window as any).webkitAudioContext)());
-        }
-      }, [audioContext]);
+    // useEffect(() => {
+    //     if (typeof window !== 'undefined' && !audioContext) {
+    //       setAudioContext(new (window.AudioContext || (window as any).webkitAudioContext)());
+    //     }
+    //   }, [audioContext]);
 
 	// Render loading state
 	if (isLoading) {
@@ -199,7 +208,7 @@ console.log('is playing', isPlaying)
 							)}
 						</Button>
 					</div>
-                    {/* {audioContext && <AudioVisualizer audioRef={audioRef} audioContext={audioContext} isPlaying={isPlaying}/>} */}
+                    {audioContext && <AudioVisualizer audioRef={audioRef} audioContext={audioContext} />}
 				</div>
 			</div>
 			
